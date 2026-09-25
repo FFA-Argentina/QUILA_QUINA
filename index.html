@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>Quila Quina · Evaluación de canon</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F2F5F5; --surface:#FFFFFF; --ink:#13262B; --muted:#5A6E72; --line:#D5DEDF;
+  --deep:#0F3D47; --lake:#1F6F78; --lake-soft:#D6ECEE; --ochre:#B7792B; --ochre-soft:#F4E6D2;
+  --good:#2F6B45; --bad:#A8432F; --track:#DCE5E6;
+  --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1A1D; --surface:#12262A; --ink:#E3EDEE; --muted:#93A9AC; --line:#24403F;
+    --deep:#A9D3D6; --lake:#5CB6BE; --lake-soft:#173A3F; --ochre:#DCA457; --ochre-soft:#3A2E1D;
+    --good:#6FBF8A; --bad:#E0866F; --track:#24403F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1A1D; --surface:#12262A; --ink:#E3EDEE; --muted:#93A9AC; --line:#24403F;
+  --deep:#A9D3D6; --lake:#5CB6BE; --lake-soft:#173A3F; --ochre:#DCA457; --ochre-soft:#3A2E1D;
+  --good:#6FBF8A; --bad:#E0866F; --track:#24403F;
+}
+*,*::before,*::after{box-sizing:inherit}
+main,aside{min-width:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;
+  font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--lake);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* Header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);
+  border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand b{font-stretch:118%;font-weight:750;font-size:1.05rem;letter-spacing:-.01em;color:var(--deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{font-size:.8rem;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px;flex-shrink:0}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font-weight:600;font-size:.85rem;cursor:pointer;min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--deep);color:var(--bg)}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;padding-top:24px;padding-bottom:40px}
+@media (min-width:980px){
+  .layout{grid-template-columns:340px minmax(0,1fr);align-items:start}
+  aside.controls{position:sticky;top:calc(env(safe-area-inset-top,0px) + 78px);max-height:calc(100vh - 96px);overflow:auto}
+  .mobile-bar{display:none!important}
+}
+
+/* Verdict hero */
+.verdict{background:var(--surface);border-radius:18px;padding:24px 22px 22px;border:1px solid var(--line)}
+.verdict h1{margin:0 0 6px;font-stretch:125%;font-weight:800;font-size:clamp(1.7rem,4.8vw,2.7rem);line-height:1.05;letter-spacing:-.02em;color:var(--deep)}
+.verdict p.lead{margin:0 0 22px;color:var(--muted);max-width:62ch}
+.balance{display:grid;gap:14px}
+.bal-row .lbl{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.9rem;margin-bottom:6px}
+.bal-row .lbl strong{font-weight:650}
+.bal-row .amt{text-align:right;margin-left:auto;font-weight:650}
+.bal-row .amt small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.bar{height:22px;background:var(--track);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .25s ease}
+.bar.new i{background:var(--lake)}
+.bar.old i{background:var(--ochre)}
+.gap{margin-top:6px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px}
+.gap .k{font-size:.9rem;color:var(--muted)}
+.gap .v{font-weight:750;font-stretch:112%;font-size:1.25rem}
+.gap .v small{display:block;font-weight:500;font-stretch:100%;font-size:.8rem;color:var(--muted);text-align:right}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;margin-top:18px}
+.metric{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--lake);border-radius:10px;padding:14px 16px}
+.metric.old{border-left-color:var(--ochre)}
+.metric.neutral{border-left-color:var(--muted)}
+.metric .k{font-size:.82rem;color:var(--muted);line-height:1.3}
+.metric .v{font-size:1.35rem;font-weight:720;font-stretch:108%;margin-top:4px;line-height:1.2}
+.metric .s{font-size:.8rem;color:var(--muted);margin-top:2px}
+.legend-note{font-size:.8rem;color:var(--muted);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+.legend-note span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* Sections */
+section.block{margin-top:28px}
+section.block h2{font-stretch:115%;font-weight:720;font-size:1.2rem;margin:0 0 4px;color:var(--deep);letter-spacing:-.01em}
+section.block p.sub{margin:0 0 14px;color:var(--muted);font-size:.9rem;max-width:70ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.chart-box{position:relative;height:300px}
+@media (max-width:600px){.chart-box{height:260px}}
+
+/* Controls */
+aside.controls .panel{padding:18px 16px}
+aside.controls h2{font-stretch:115%;font-weight:720;font-size:1.1rem;margin:0 0 2px;color:var(--deep)}
+aside.controls .hint{font-size:.82rem;color:var(--muted);margin:0 0 8px}
+fieldset{border:0;margin:0;padding:14px 0 4px;border-top:1px solid var(--line)}
+fieldset:first-of-type{border-top:0}
+legend{font-weight:650;font-size:.88rem;color:var(--muted);padding:0;margin-bottom:6px}
+.ctl{padding:8px 0 10px}
+.ctl-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl-head label{font-size:.92rem;font-weight:550}
+.ctl-head output{font-weight:720;font-size:1rem;color:var(--lake);white-space:nowrap}
+.ctl-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.step{flex:0 0 36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--bg);font-size:1.15rem;font-weight:600;cursor:pointer;display:grid;place-items:center;touch-action:manipulation}
+.step:active{background:var(--lake-soft)}
+.range-meta{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);padding:0 44px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:36px;background:transparent;margin:0;cursor:pointer;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--lake) 0 var(--p,50%),var(--track) var(--p,50%) 100%)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--lake)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--surface);border:3px solid var(--lake);margin-top:-10px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:3px solid var(--lake)}
+.fixed-list{font-size:.85rem;color:var(--muted);margin:4px 0 0;padding:0;list-style:none}
+.fixed-list li{display:flex;justify-content:space-between;padding:3px 0}
+.fixed-list b{color:var(--ink);font-weight:600}
+.reset{margin-top:14px;width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:600;cursor:pointer}
+
+/* CAPM */
+.capm-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:720px){.capm-grid{grid-template-columns:1.1fr 1fr;align-items:center}}
+.capm-total{font-stretch:120%;font-weight:780;font-size:2rem;color:var(--deep);line-height:1}
+.capm-total small{display:block;font-stretch:100%;font-weight:450;font-size:.85rem;color:var(--muted);margin-top:6px}
+.capm-stack{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:14px 0 6px}
+.capm-stack i{display:block;height:100%}
+.capm-tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.capm-tbl td{padding:6px 0;border-bottom:1px solid var(--line)}
+.capm-tbl td:last-child{text-align:right;font-weight:600;white-space:nowrap;padding-left:10px}
+.capm-tbl .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+.capm-tbl tr.tot td{border-bottom:0;font-weight:750}
+.capm-cmp{font-size:.88rem;color:var(--muted);margin-top:8px}
+
+/* Table */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table.flows{border-collapse:separate;border-spacing:0;font-size:.82rem;min-width:100%}
+table.flows th,table.flows td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+table.flows thead th{background:var(--bg);font-weight:650;color:var(--muted);position:sticky;top:0}
+table.flows th:first-child,table.flows td:first-child{position:sticky;left:0;text-align:left;background:var(--surface);z-index:1;font-weight:550;
+  min-width:150px;max-width:190px;white-space:normal;line-height:1.25;box-shadow:1px 0 0 var(--line)}
+table.flows thead th:first-child{background:var(--bg);z-index:2}
+table.flows tr.em td{font-weight:700}
+table.flows tr.em td:first-child{color:var(--deep)}
+table.flows tr.old td:first-child{border-left:3px solid var(--ochre)}
+table.flows tr.sep td{border-top:2px solid var(--line)}
+.tbl-note{font-size:.78rem;color:var(--muted);margin-top:8px}
+
+details.method{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+details.method summary{cursor:pointer;padding:14px 0;font-weight:650;color:var(--deep);list-style:none;min-height:44px}
+details.method summary::-webkit-details-marker{display:none}
+details.method summary::after{content:"+";float:right;font-weight:600}
+details.method[open] summary::after{content:"−"}
+details.method div{padding-bottom:14px;font-size:.9rem;color:var(--muted);max-width:75ch}
+details.method p{margin:0 0 10px}
+footer{font-size:.78rem;color:var(--muted);padding:24px 0 20px}
+
+.warn{display:none;margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--ochre-soft);color:var(--ink);font-size:.88rem}
+.warn.show{display:block}
+
+/* Mobile summary bar */
+.mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--deep);color:var(--bg);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:12px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.18)}
+.mobile-bar .mb-v{font-weight:750;font-stretch:115%;font-size:.95rem;line-height:1.15}
+.mobile-bar .mb-s{font-size:.75rem;opacity:.85}
+.mobile-bar a{color:var(--bg);font-weight:650;font-size:.85rem;text-decoration:underline;white-space:nowrap}
+@media (max-width:979px){body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <b>Excursión lacustre Quila Quina</b>
+      <span>Evaluación del nuevo canon · Lago Lácar</span>
+    </div>
+    <div class="seg" role="group" aria-label="Moneda de visualización">
+      <button type="button" data-cur="ARS" aria-pressed="true">ARS</button>
+      <button type="button" data-cur="USD" aria-pressed="false">USD</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+
+  <!-- CONTROLES -->
+  <aside class="controls" id="panel">
+    <div class="panel">
+      <h2>Panel de control</h2>
+      <p class="hint">Los resultados se recalculan al mover cada control.</p>
+
+      <fieldset>
+        <legend>Canon y descuento</legend>
+        <div class="ctl" data-key="canon" data-min="0" data-max="30" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-canon">Canon propuesto</label><output id="out-canon"></output></div></div>
+        <div class="ctl" data-key="rate" data-min="0" data-max="30" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-rate">Tasa de descuento</label><output id="out-rate"></output></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Crecimiento de ingresos (drift)</legend>
+        <div class="ctl" data-key="g1" data-min="0" data-max="20" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-g1">Años 1 a 5</label><output id="out-g1"></output></div></div>
+        <div class="ctl" data-key="g2" data-min="0" data-max="20" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-g2">Años 6 a 10</label><output id="out-g2"></output></div></div>
+        <div class="ctl" data-key="g3" data-min="0" data-max="20" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-g3">Años 11 a 15</label><output id="out-g3"></output></div></div>
+        <div class="ctl" data-key="g4" data-min="0" data-max="20" data-step="0.5" data-fmt="pct1"><div class="ctl-head"><label for="in-g4">Años 16 a 20</label><output id="out-g4"></output></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Supuestos base</legend>
+        <div class="ctl" data-key="tc" data-min="1400" data-max="1800" data-step="10" data-fmt="tc"><div class="ctl-head"><label for="in-tc">Tipo de cambio (ARS/USD)</label><output id="out-tc"></output></div></div>
+        <div class="ctl" data-key="eg" data-min="50" data-max="75" data-step="0.1" data-fmt="pct1"><div class="ctl-head"><label for="in-eg">Egresos operativos / ingresos</label><output id="out-eg"></output></div></div>
+        <div class="ctl" data-key="base" data-min="50" data-max="100" data-step="0.05" data-fmt="mill"><div class="ctl-head"><label for="in-base">Ingreso base año 1 (neto de IVA)</label><output id="out-base"></output></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Parámetros fijos del modelo</legend>
+        <ul class="fixed-list">
+          <li><span>Canon actual</span><b>28,2 %</b></li>
+          <li><span>IVA sobre ingresos</span><b>21 %</b></li>
+          <li><span>Alícuota escudo fiscal D&amp;A</span><b>35 %</b></li>
+          <li><span>Horizonte / período de inversión</span><b>20 / 5 años</b></li>
+        </ul>
+      </fieldset>
+
+      <button type="button" class="reset" id="reset">Restablecer valores de la planilla</button>
+    </div>
+  </aside>
+
+  <!-- RESULTADOS -->
+  <main id="resultados">
+    <div class="verdict">
+      <h1 id="v-title">—</h1>
+      <p class="lead" id="v-lead">—</p>
+      <div class="balance">
+        <div class="bal-row">
+          <div class="lbl"><strong>Inversión exigible con el nuevo canon (5 años)</strong><span class="amt" id="b-new"></span></div>
+          <div class="bar new"><i id="bar-new"></i></div>
+        </div>
+        <div class="bal-row">
+          <div class="lbl"><strong>Inversión equivalente al canon actual (5 años)</strong><span class="amt" id="b-old"></span></div>
+          <div class="bar old"><i id="bar-old"></i></div>
+        </div>
+        <div class="gap"><span class="k">Diferencia de inversión teórica</span><span class="v" id="b-gap"></span></div>
+      </div>
+      <div class="warn" id="warn"></div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="k">Inversión anual requerida (años 1–5)</div><div class="v" id="m-inv-ars"></div><div class="s" id="m-inv-usd"></div></div>
+      <div class="metric old"><div class="k">Inversión equivalente anual al canon actual</div><div class="v" id="m-eq-ars"></div><div class="s" id="m-eq-usd"></div></div>
+      <div class="metric old"><div class="k">VAN de los flujos al canon actual</div><div class="v" id="m-vanca"></div><div class="s" id="m-vanca-s"></div></div>
+      <div class="metric"><div class="k">TIR del proyecto con nuevo canon</div><div class="v" id="m-tir"></div><div class="s" id="m-tir-s"></div></div>
+      <div class="metric neutral"><div class="k">CAGR de ingresos (20 años)</div><div class="v" id="m-cagr"></div><div class="s" id="m-cagr-s"></div></div>
+      <div class="metric neutral"><div class="k">Ingresos año 1 / año 20 (con IVA)</div><div class="v" id="m-ing"></div><div class="s" id="m-ing-s"></div></div>
+    </div>
+    <div class="legend-note"><span style="--c:var(--lake)">Escenario nuevo canon</span><span style="--c:var(--ochre)">Escenario canon actual</span></div>
+
+    <section class="block">
+      <h2>Flujos netos del proyecto con nuevo canon</h2>
+      <p class="sub">Flujo neto anual con inversiones y escudo fiscal, y su valor descontado acumulado. El acumulado termina en cero porque la inversión se ajusta para que el VAN sea nulo.</p>
+      <div class="panel"><div class="chart-box"><canvas id="ch-flows" aria-label="Gráfico de flujos netos por año" role="img"></canvas></div></div>
+    </section>
+
+    <section class="block">
+      <h2>Destino de los ingresos</h2>
+      <p class="sub">Cada barra es el ingreso del año (con IVA), repartido entre egresos operativos, canon y flujo neto antes de inversiones. La línea muestra el flujo neto si se mantuviera el canon actual.</p>
+      <div class="panel"><div class="chart-box"><canvas id="ch-mix" aria-label="Gráfico de composición de ingresos" role="img"></canvas></div></div>
+    </section>
+
+    <section class="block">
+      <h2>Tasa de referencia teórica (CAPM)</h2>
+      <p class="sub">Referencia informativa: no modifica el cálculo, que usa la tasa del panel de control.</p>
+      <div class="panel">
+        <div class="capm-grid">
+          <div>
+            <div class="capm-total" id="capm-total">20,66 %<small>Rf + β × ERP + riesgo país + prima de iliquidez/escala</small></div>
+            <div class="capm-stack" id="capm-stack" aria-hidden="true"></div>
+            <div class="capm-cmp" id="capm-cmp"></div>
+          </div>
+          <table class="capm-tbl" id="capm-tbl"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Flujos proyectados</h2>
+      <p class="sub" id="tbl-sub">Valores en millones de pesos.</p>
+      <div class="tbl-scroll"><table class="flows" id="tbl"></table></div>
+      <p class="tbl-note">Deslizá la tabla horizontalmente para ver los 20 años.</p>
+    </section>
+
+    <details class="method">
+      <summary>Cómo se calcula</summary>
+      <div>
+        <p>Los ingresos del año 1 son el ingreso base más IVA y crecen cada año según el drift del tramo. Los egresos operativos son un porcentaje fijo de los ingresos y el canon se aplica sobre los ingresos netos de IVA.</p>
+        <p>La inversión anual (años 1 a 5) es la que deja en cero el VAN del proyecto con el nuevo canon, considerando la amortización lineal de cada tramo hasta el año 20 y un escudo fiscal del 35 % sobre la D&amp;A. Por construcción, la TIR coincide con la tasa de descuento.</p>
+        <p>La inversión equivalente es la anualidad de 5 años cuyo valor presente iguala el VAN de los flujos al canon actual (28,2 %). Si la inversión exigible con el nuevo canon supera a la equivalente, conviene el nuevo canon.</p>
+        <p>En la planilla original estos valores se obtienen con Solver (macros TIR, INVERSION e INVERSION_CANONACTUAL); aquí se resuelven en forma exacta en cada cambio.</p>
+      </div>
+    </details>
+
+    <footer>Fuente: QUILA_QUINA_FLUJOS.xlsm, hojas "Flujos proyectados" y "Panel de control".</footer>
+  </main>
+</div>
+
+<div class="mobile-bar" aria-live="polite">
+  <div><div class="mb-v" id="mb-v">—</div><div class="mb-s" id="mb-s">—</div></div>
+  <a href="#panel">Ajustar</a>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Valores por defecto (planilla) ---------- */
+var DEFAULTS = {
+  canon: 12, rate: 17, g1: 7, g2: 4, g3: 2, g4: 1,
+  tc: 1550,
+  eg: 61.19040471985344,          // 'Cta Cte'!D11
+  base: 53.45532292               // 'Cta Cte'!I18, en millones, neto de IVA
+};
+var FIXED = { canonActual: 0.282, iva: 1.21, tax: 0.35, N: 20, invYears: 5 };
+var CAPM = [
+  {k:"Tasa libre de riesgo (Rf)", v:0.0516, c:"#9CC9CF"},
+  {k:"β × ERP (1,4 × 4,14 %, Damodaran 12 m)", v:1.4*0.0414, c:"#1F6F78"},
+  {k:"Riesgo país (570 pb)", v:570/10000, c:"#B7792B"},
+  {k:"Prima de iliquidez / escala", v:0.04, c:"#5A6E72"}
+];
+
+var state = Object.assign({}, DEFAULTS);
+var currency = "ARS";
+
+/* ---------- Formatos ---------- */
+var nf = function(d){ return new Intl.NumberFormat("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d}); };
+var nf0 = nf(0), nf1 = nf(1), nf2 = nf(2);
+function pct(x,d){ return (d===2?nf2:nf1).format(x*100)+"\u00a0%"; }
+function ars(v){ return "$\u00a0"+nf2.format(v/1e6)+"\u00a0M"; }
+function usd(v,tc){ var u=v/tc; return Math.abs(u)>=1e6 ? "US$\u00a0"+nf2.format(u/1e6)+"\u00a0M" : "US$\u00a0"+nf0.format(u); }
+function money(v){ return currency==="ARS" ? ars(v) : usd(v,state.tc); }
+function signed(s,v){ return (v>0?"+":"")+s; }
+function fmtCtl(fmt,v){
+  if(fmt==="pct1") return nf1.format(v)+" %";
+  if(fmt==="tc") return "$ "+nf0.format(v);
+  if(fmt==="mill") return "$ "+nf2.format(v)+" M";
+  return v;
+}
+
+/* ---------- Modelo ---------- */
+function model(s){
+  var N=FIXED.N, c=s.canon/100, r=s.rate/100, e=s.eg/100, g=[s.g1/100,s.g2/100,s.g3/100,s.g4/100];
+  var ing=[], gr=[], eg=[], can=[], fns=[], d=[], fnsCA=[];
+  for(var t=1;t<=N;t++){
+    var gt = t===1 ? null : g[Math.floor((t-1)/5)];
+    gr.push(gt);
+    ing.push(t===1 ? s.base*1e6*FIXED.iva : ing[t-2]*(1+gt));
+  }
+  for(var i=0;i<N;i++){
+    eg.push(ing[i]*e);
+    can.push(ing[i]/FIXED.iva*c);
+    fns.push(ing[i]-eg[i]-can[i]);
+    fnsCA.push(ing[i]-eg[i]-FIXED.canonActual*ing[i]/FIXED.iva);
+    d.push(Math.pow(1+r,-(i+1)));
+  }
+  // Coeficiente de D&A por año (por unidad de inversión anual)
+  var daCoef=[];
+  for(var t2=1;t2<=N;t2++){
+    var s1=0; for(var k=1;k<=Math.min(t2-1,FIXED.invYears);k++) s1+=1/(N-k);
+    daCoef.push(s1);
+  }
+  // VAN(X) = A + X·B  →  X tal que VAN = 0  (macro INVERSION)
+  var A=0,B=0;
+  for(var j=0;j<N;j++){
+    A+=fns[j]*d[j];
+    B+=((j<FIXED.invYears?-1:0)+FIXED.tax*daCoef[j])*d[j];
+  }
+  var X = -A/B;
+  var inv=[], da=[], shield=[], fnc=[], dcf=[], cum=[], acc=0;
+  for(var m=0;m<N;m++){
+    inv.push(m<FIXED.invYears?X:0);
+    da.push(daCoef[m]*X);
+    shield.push(FIXED.tax*da[m]);
+    fnc.push(fns[m]-inv[m]+shield[m]);
+    dcf.push(fnc[m]*d[m]);
+    acc+=dcf[m]; cum.push(acc);
+  }
+  // VAN al canon actual e inversión equivalente (macro INVERSION_CANONACTUAL)
+  var vanCA=0, dcfCA=[];
+  for(var q=0;q<N;q++){ dcfCA.push(fnsCA[q]*d[q]); vanCA+=dcfCA[q]; }
+  var annuity=0; for(var a=0;a<FIXED.invYears;a++) annuity+=d[a];
+  var Y = vanCA/annuity;
+  var dcfEq=[]; for(var b=0;b<N;b++) dcfEq.push(b<FIXED.invYears?Y*d[b]:null);
+  // TIR (macro TIR) por bisección
+  var tir = irr(fnc);
+  var cagr = Math.pow(ing[N-1]/ing[0],1/N)-1;  // réplica de B4: exponente 1/U1
+  return {ing:ing,gr:gr,eg:eg,can:can,fns:fns,fnsCA:fnsCA,inv:inv,da:da,shield:shield,fnc:fnc,dcf:dcf,cum:cum,
+    dcfCA:dcfCA,dcfEq:dcfEq,X:X,Y:Y,invTot:X*FIXED.invYears,eqTot:Y*FIXED.invYears,
+    diff:(X-Y)*FIXED.invYears,vanCA:vanCA,van:acc,tir:tir,cagr:cagr,A:A};
+}
+function npv(fl,r){ var v=0; for(var i=0;i<fl.length;i++) v+=fl[i]/Math.pow(1+r,i+1); return v; }
+function irr(fl){
+  var lo=-0.99, hi=10, flo=npv(fl,lo), fhi=npv(fl,hi);
+  if(!isFinite(flo)||!isFinite(fhi)||flo*fhi>0) return null;
+  for(var i=0;i<200;i++){
+    var mid=(lo+hi)/2, fm=npv(fl,mid);
+    if(Math.abs(fm)<1e-6) return mid;
+    if(flo*fm<0){hi=mid;fhi=fm;}else{lo=mid;flo=fm;}
+  }
+  return (lo+hi)/2;
+}
+
+/* ---------- Controles ---------- */
+var inputs={};
+document.querySelectorAll(".ctl").forEach(function(el){
+  var key=el.dataset.key, min=+el.dataset.min, max=+el.dataset.max, step=+el.dataset.step;
+  var row=document.createElement("div"); row.className="ctl-row";
+  var minus=document.createElement("button"); minus.type="button"; minus.className="step"; minus.textContent="−"; minus.setAttribute("aria-label","Disminuir");
+  var plus=document.createElement("button"); plus.type="button"; plus.className="step"; plus.textContent="+"; plus.setAttribute("aria-label","Aumentar");
+  var inp=document.createElement("input"); inp.type="range"; inp.id="in-"+key; inp.min=min; inp.max=max; inp.step=step;
+  row.appendChild(minus); row.appendChild(inp); row.appendChild(plus);
+  el.appendChild(row);
+  var meta=document.createElement("div"); meta.className="range-meta";
+  meta.innerHTML="<span>"+fmtCtl(el.dataset.fmt,min)+"</span><span>"+fmtCtl(el.dataset.fmt,max)+"</span>";
+  el.appendChild(meta);
+  inputs[key]={el:el,inp:inp,min:min,max:max,step:step,fmt:el.dataset.fmt,out:document.getElementById("out-"+key)};
+  inp.addEventListener("input",function(){ state[key]=+inp.value; syncCtl(key); render(); });
+  function nudge(dir){
+    var v=Math.round((state[key]+dir*step)/step)*step;
+    v=Math.min(max,Math.max(min,+v.toFixed(4)));
+    state[key]=v; syncCtl(key); render();
+  }
+  minus.addEventListener("click",function(){nudge(-1);});
+  plus.addEventListener("click",function(){nudge(1);});
+});
+function syncCtl(key){
+  var c=inputs[key], v=state[key];
+  c.inp.value=v;
+  c.inp.style.setProperty("--p",((v-c.min)/(c.max-c.min)*100)+"%");
+  c.out.textContent=fmtCtl(c.fmt,v);
+}
+function syncAll(){ Object.keys(inputs).forEach(syncCtl); }
+document.getElementById("reset").addEventListener("click",function(){ state=Object.assign({},DEFAULTS); syncAll(); render(); });
+
+document.querySelectorAll(".seg button").forEach(function(b){
+  b.addEventListener("click",function(){
+    currency=b.dataset.cur;
+    document.querySelectorAll(".seg button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});
+    render();
+  });
+});
+
+/* ---------- Gráficos ---------- */
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+var charts={};
+var years=[]; for(var y=1;y<=20;y++) years.push("Año "+y);
+function scaleVal(v){ return currency==="ARS" ? v/1e6 : v/state.tc/1e3; }
+function unitLbl(){ return currency==="ARS" ? "Millones de ARS" : "Miles de USD"; }
+function tickFmt(v){ return nf0.format(v); }
+
+function baseOpts(){
+  var ink=css("--muted"), line=css("--line");
+  return {
+    responsive:true, maintainAspectRatio:false, animation:false,
+    interaction:{mode:"index",intersect:false},
+    plugins:{
+      legend:{position:"bottom",labels:{color:ink,boxWidth:12,boxHeight:12,font:{family:"Archivo, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",size:11}}},
+      tooltip:{callbacks:{label:function(ctx){ return ctx.dataset.label+": "+nf2.format(ctx.parsed.y)+(currency==="ARS"?" M":" mil"); }}}
+    },
+    scales:{
+      x:{ticks:{color:ink,font:{family:"Archivo, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",size:10},maxRotation:0,autoSkip:true,callback:function(v,i){return (i+1);}},grid:{display:false}},
+      y:{ticks:{color:ink,font:{family:"Archivo, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",size:10},callback:tickFmt},grid:{color:line},title:{display:true,text:unitLbl(),color:ink,font:{family:"Archivo, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",size:11}}}
+    }
+  };
+}
+function buildCharts(r){
+  if(typeof Chart==="undefined") return;
+  var lake=css("--lake"), ochre=css("--ochre"), bad=css("--bad"), deep=css("--deep"), muted=css("--muted");
+  var o1=baseOpts();
+  var d1={labels:years,datasets:[
+    {type:"bar",label:"Flujo neto c/inversiones",data:r.fnc.map(scaleVal),
+      backgroundColor:r.fnc.map(function(v){return v<0?bad:lake;}),borderRadius:3,order:2},
+    {type:"line",label:"DCF acumulado",data:r.cum.map(scaleVal),borderColor:deep,backgroundColor:deep,
+      pointRadius:0,borderWidth:2.5,tension:.25,order:1}
+  ]};
+  var o2=baseOpts(); o2.scales.x.stacked=true; o2.scales.y.stacked=true;
+  var d2={labels:years,datasets:[
+    {type:"bar",label:"Egresos operativos",data:r.eg.map(scaleVal),backgroundColor:muted+"99",stack:"s",order:3},
+    {type:"bar",label:"Canon (nuevo)",data:r.can.map(scaleVal),backgroundColor:ochre,stack:"s",order:3},
+    {type:"bar",label:"Flujo neto s/inversiones",data:r.fns.map(scaleVal),backgroundColor:lake,stack:"s",order:3},
+    {type:"line",label:"Flujo neto al canon actual",data:r.fnsCA.map(scaleVal),borderColor:deep,borderDash:[5,4],
+      pointRadius:0,borderWidth:2,stack:"l",order:1}
+  ]};
+  if(charts.flows){ charts.flows.data=d1; charts.flows.options=o1; charts.flows.update("none"); }
+  else charts.flows=new Chart(document.getElementById("ch-flows"),{data:d1,options:o1});
+  if(charts.mix){ charts.mix.data=d2; charts.mix.options=o2; charts.mix.update("none"); }
+  else charts.mix=new Chart(document.getElementById("ch-mix"),{data:d2,options:o2});
+}
+
+/* ---------- CAPM ---------- */
+function renderCapm(){
+  var total=CAPM.reduce(function(s,c){return s+c.v;},0);
+  document.getElementById("capm-total").firstChild.nodeValue=pct(total,2);
+  document.getElementById("capm-stack").innerHTML=CAPM.map(function(c){return '<i style="width:'+(c.v/total*100)+'%;background:'+c.c+'"></i>';}).join("");
+  document.getElementById("capm-tbl").innerHTML=CAPM.map(function(c){
+    return '<tr><td><span class="sw" style="background:'+c.c+'"></span>'+c.k+'</td><td>'+pct(c.v,2)+'</td></tr>';
+  }).join("")+'<tr class="tot"><td>Tasa teórica</td><td>'+pct(total,2)+'</td></tr>';
+  var used=state.rate/100, dif=(used-total)*100;
+  document.getElementById("capm-cmp").textContent="La tasa usada en el panel ("+pct(used)+") está "+
+    (Math.abs(dif)<0.005?"en línea con":(nf2.format(Math.abs(dif))+" puntos "+(dif<0?"por debajo de":"por encima de")))+" la referencia teórica.";
+}
+
+/* ---------- Tabla ---------- */
+function renderTable(r){
+  var isA=currency==="ARS";
+  var f=function(v){ if(v===null||v===undefined) return ""; var x=isA?v/1e6:v/state.tc; return isA?nf2.format(x):nf0.format(x); };
+  document.getElementById("tbl-sub").textContent= isA ? "Valores en millones de pesos." : "Valores en dólares (TC $ "+nf0.format(state.tc)+").";
+  var rows=[
+    {k:"Crecimiento anual",v:r.gr.map(function(g){return g===null?"":nf1.format(g*100)+" %";}),raw:true},
+    {k:"Ingresos (con IVA)",v:r.ing,cls:"sep"},
+    {k:"Egresos operativos",v:r.eg},
+    {k:"Canon ("+nf1.format(state.canon)+" %)",v:r.can},
+    {k:"Flujo neto s/inversiones",v:r.fns,cls:"em"},
+    {k:"Inversiones",v:r.inv,cls:"sep"},
+    {k:"D&A acumulada",v:r.da},
+    {k:"Escudo fiscal D&A (35 %)",v:r.shield},
+    {k:"Flujo neto c/inversiones",v:r.fnc,cls:"em"},
+    {k:"DCF",v:r.dcf},
+    {k:"DCF acumulado",v:r.cum},
+    {k:"DCF al canon actual",v:r.dcfCA,cls:"sep old"},
+    {k:"DCF inversión equivalente",v:r.dcfEq,cls:"old"}
+  ];
+  var h="<thead><tr><th scope='col'>Concepto</th>"+years.map(function(_,i){return "<th scope='col'>"+(i+1)+"</th>";}).join("")+"</tr></thead><tbody>";
+  rows.forEach(function(row){
+    h+="<tr class='"+(row.cls||"")+"'><td>"+row.k+"</td>"+row.v.map(function(v){
+      var txt=row.raw?v:f(v); var neg=!row.raw&&v<0;
+      return "<td"+(neg?" class='neg'":"")+">"+txt+"</td>";
+    }).join("")+"</tr>";
+  });
+  document.getElementById("tbl").innerHTML=h+"</tbody>";
+}
+
+/* ---------- Render ---------- */
+function setT(id,t){ document.getElementById(id).textContent=t; }
+function render(){
+  var r=model(state), tc=state.tc;
+  var conv = r.diff>0;
+  setT("v-title", conv ? "Conviene el nuevo canon" : "Conviene mantener el canon actual");
+  setT("v-lead", conv
+    ? "Con un canon de "+nf1.format(state.canon)+" %, el concesionario debe invertir "+ars(r.invTot)+" en 5 años: "+ars(Math.abs(r.diff))+" más que la inversión equivalente a sostener el canon actual del 28,2 %."
+    : "Con un canon de "+nf1.format(state.canon)+" %, la inversión exigible ("+ars(r.invTot)+") no alcanza la inversión equivalente al canon actual del 28,2 % ("+ars(r.eqTot)+").");
+
+  var mx=Math.max(Math.abs(r.invTot),Math.abs(r.eqTot),1);
+  document.getElementById("bar-new").style.width=Math.max(0,r.invTot/mx*100)+"%";
+  document.getElementById("bar-old").style.width=Math.max(0,r.eqTot/mx*100)+"%";
+  document.getElementById("b-new").innerHTML=ars(r.invTot)+"<small>"+usd(r.invTot,tc)+"</small>";
+  document.getElementById("b-old").innerHTML=ars(r.eqTot)+"<small>"+usd(r.eqTot,tc)+"</small>";
+  var gapEl=document.getElementById("b-gap");
+  gapEl.className="v "+(conv?"pos":"neg");
+  gapEl.innerHTML=signed(ars(r.diff),r.diff)+"<small>"+signed(usd(r.diff,tc),r.diff)+"</small>";
+
+  var w=document.getElementById("warn");
+  if(r.A<=0){ w.textContent="Con estos supuestos los flujos antes de inversiones no son positivos: no existe una inversión que haga viable el proyecto."; w.classList.add("show"); }
+  else if(r.eqTot<0){ w.textContent="El VAN al canon actual es negativo: la inversión equivalente resulta negativa."; w.classList.add("show"); }
+  else w.classList.remove("show");
+
+  setT("m-inv-ars",ars(r.X)); setT("m-inv-usd",usd(r.X,tc)+" por año");
+  setT("m-eq-ars",ars(r.Y)); setT("m-eq-usd",usd(r.Y,tc)+" por año");
+  setT("m-vanca",money(r.vanCA)); setT("m-vanca-s","Descontado al "+pct(state.rate/100));
+  setT("m-tir", r.tir===null?"—":pct(r.tir,2)); setT("m-tir-s","VAN con nuevo canon: "+money(Math.abs(r.van)<1?0:r.van));
+  setT("m-cagr",pct(r.cagr,2)); setT("m-cagr-s","Drifts "+[state.g1,state.g2,state.g3,state.g4].map(function(x){return nf1.format(x);}).join(" / ")+" %");
+  setT("m-ing",money(r.ing[0])); setT("m-ing-s","Año 20: "+money(r.ing[19]));
+
+  setT("mb-v", conv ? "Conviene el nuevo canon" : "Conviene el canon actual");
+  setT("mb-s","Inversión "+ars(r.invTot)+" · dif. "+signed(ars(r.diff),r.diff));
+
+  renderCapm();
+  renderTable(r);
+  buildCharts(r);
+}
+
+syncAll();
+render();
+
+// Re-render de gráficos al cambiar el tema del sistema
+if(window.matchMedia){
+  var mq=window.matchMedia("(prefers-color-scheme: dark)");
+  var onTheme=function(){ if(charts.flows){charts.flows.destroy();charts.flows=null;} if(charts.mix){charts.mix.destroy();charts.mix=null;} render(); };
+  if(mq.addEventListener) mq.addEventListener("change",onTheme); else if(mq.addListener) mq.addListener(onTheme);
+}
+})();
+</script>
+</body>
+</html>
